@@ -9,7 +9,7 @@ class Player():
         """
         self.name = name
         self.deck = []
-        self.is_win = False
+        self.card_exists = True
         self.is_auto = is_auto
 
     def __repr__(self) -> str:

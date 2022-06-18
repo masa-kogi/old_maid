@@ -1,20 +1,47 @@
 import random
 
+from player import Player
+
 class OldMaid():
     def __init__(self, players: list) -> None:
         self.players = players
+        self.rank = []
 
     def create_turn_index(self, passer_i: int, drawer_i: int) -> tuple:
         """
-        Create an index to determin if it is passer or drawer
+        Create an index to determin if it is passer or drawer.
         """
-        passer_i, drawer_i = drawer_i, drawer_i + 1
-        if passer_i >= len(self.players):
-            passer_i = 0
-            drawer_i = 1
-        elif drawer_i >= len(self.players):
-            drawer_i = 0
+        def decide_turn_index(
+            turn_i: int, players: list, check_equal: int = None) -> int:
+            """
+            Decide a turn index.
+            """
+            while True:
+                if turn_i >= len(players):
+                    turn_i = 0
+                if not players[turn_i].card_exists:
+                    turn_i += 1
+                    continue
+                if turn_i == check_equal:
+                    turn_i += 1
+                    continue
+                break
+            return turn_i
+
+        passer_i = drawer_i
+        passer_i = decide_turn_index(passer_i, self.players)
+        
+        drawer_i = passer_i + 1
+        drawer_i = decide_turn_index(drawer_i, self.players, check_equal=passer_i)
         return passer_i, drawer_i
+
+    def check_is_zero(self, player: dict, rank: list) -> None:
+        """
+        Check how many cards player have on hand.
+        """
+        if len(player.deck) == 0:
+            player.card_exists = False
+            rank.append(player.name)
 
     def select(self, passer: object, drawer: object) ->str:
         """
@@ -60,33 +87,28 @@ class OldMaid():
         passer_i = -1
         drawer_i = 0
         loop = 0
-        rank = []
 
         print(f'GAME START')
 
-        while True:
+        while len(self.players) - len(self.rank) > 1:
             loop += 1
             print(f'\n --- TURN {loop} ---')
 
             passer_i, drawer_i = self.create_turn_index(passer_i, drawer_i)
 
             selected_card = self.select(self.players[passer_i], self.players[drawer_i])
+            self.check_is_zero(self.players[passer_i], self.rank)
 
             self.putdown_or_add(selected_card, self.players[drawer_i])
+            self.check_is_zero(self.players[drawer_i], self.rank)
 
             print(f'\tCurrent card number: ', end='')
             for i in range(len(self.players)):
                 print(f'{self.players[i].name}: {len(self.players[i].deck)} ', end='')
-                if len(self.players[i].deck) == 0:
-                    print('*WIN', end='')
-                    rank.append(self.players.pop(i))
-                    break
 
-            if len(self.players) < 2:
-                break
-
-        rank.append(self.players.pop())
+        player_name = [p.name for p in self.players if p.card_exists][0]
+        self.rank.append(player_name)
 
         print('\n\nGAME END\n')
-        for i in range(len(rank)):
-            print(f'RANK {i+1}: {rank[i].name}')
+        for i in range(len(self.rank)):
+            print(f'RANK {i+1}: {self.rank[i]}')
