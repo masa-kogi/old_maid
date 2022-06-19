@@ -1,8 +1,13 @@
 import random
 
-class Dealer():
+class Deck():
+
+    CARD_NUM = 13
 
     def __init__(self) -> None:
+        """
+        Create deck.
+        """
         self.initial_deck = self.create_initial_deck()
 
     def create_initial_deck(self) -> list:
@@ -12,7 +17,7 @@ class Dealer():
         """
         initial_deck = []
 
-        for n in range(1, 14):
+        for n in range(1, self.CARD_NUM + 1):
             if n == 1:
                 card_number = 'A'
             elif n == 11:
@@ -34,29 +39,17 @@ class Dealer():
 
         return initial_deck
 
-    def initial_deal(self, *args: tuple)-> list: 
+    def deal_cards(self, players: list)-> list: 
         """
         Deal cards to players automatically.
         """
-        players = list(args)
         random.shuffle(self.initial_deck)
         q, mod = divmod(len(self.initial_deck), len(players))
         for i in range(len(players)):
-            slice_n = q
+            player = players[i]
+            slice_position = q
             if i < mod:
-                slice_n = q + 1
-            players[i].deck = self.initial_deck[:slice_n]
-            del self.initial_deck[:slice_n]
+                slice_position = q + 1
+            player.cards = self.initial_deck[:slice_position]
+            del self.initial_deck[:slice_position]
         return players
-
-    def initial_putdown(self, deck: list) -> list:
-        """
-        Play(put down) matching cards.
-        """
-        while len(set(deck))!= len(deck):
-            drawn_card = deck.pop(0)
-            if drawn_card in deck:
-                deck.remove(drawn_card)
-            else:
-                deck.append(drawn_card)
-        return deck
